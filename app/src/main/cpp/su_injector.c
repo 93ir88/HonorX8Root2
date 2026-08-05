@@ -1,4 +1,8 @@
 #define _GNU_SOURCE
+#include <sched.h>
+#ifndef CLONE_NEWNS
+#define CLONE_NEWNS 0x00020000
+#endif
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
