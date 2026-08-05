@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent" android:layout_height="match_parent"
+    android:orientation="vertical" android:background="@color/bg" android:padding="16dp">
+
+    <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
+        android:orientation="horizontal" android:gravity="center_vertical" android:paddingBottom="4dp">
+        <TextView android:layout_width="0dp" android:layout_height="wrap_content"
+            android:layout_weight="1" android:text="HonorX8Root"
+            android:textSize="20sp" android:textStyle="bold" android:textColor="@color/accent"/>
+        <TextView android:id="@+id/tv_state" android:layout_width="wrap_content"
+            android:layout_height="wrap_content" android:text="● NOT ROOTED"
+            android:textSize="12sp" android:textColor="@color/red"/>
+    </LinearLayout>
+
+    <TextView android:layout_width="match_parent" android:layout_height="wrap_content"
+        android:text="TFY-LX2 · SD680 · Android 13 · 4.19.157"
+        android:textColor="@color/sub" android:textSize="11sp" android:paddingBottom="12dp"/>
+
+    <Button android:id="@+id/btn_root" android:layout_width="match_parent"
+        android:layout_height="52dp" android:text="GRANT ROOT"
+        android:textSize="15sp" android:textStyle="bold"
+        android:background="#CC2a2a2a" android:textColor="@color/accent"/>
+
+    <ScrollView android:id="@+id/sv_log" android:layout_width="match_parent"
+        android:layout_height="0dp" android:layout_weight="1"
+        android:layout_marginTop="10dp" android:background="#0f0f0f" android:padding="8dp">
+        <TextView android:id="@+id/tv_log" android:layout_width="match_parent"
+            android:layout_height="wrap_content" android:fontFamily="monospace"
+            android:textSize="10sp" android:textColor="@color/text"/>
+    </ScrollView>
+
+    <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
+        android:orientation="horizontal" android:gravity="center_vertical" android:paddingTop="10dp">
+        <TextView android:layout_width="0dp" android:layout_height="wrap_content"
+            android:layout_weight="1" android:text="MODULES"
+            android:textSize="12sp" android:textStyle="bold" android:textColor="@color/sub"/>
+        <Button android:id="@+id/btn_add_mod" android:layout_width="wrap_content"
+            android:layout_height="34dp" android:text="+ ADD"
+            android:textSize="11sp" android:textColor="@color/accent"
+            android:background="@android:color/transparent"/>
+    </LinearLayout>
+
+    <ListView android:id="@+id/lv_mods" android:layout_width="match_parent"
+        android:layout_height="120dp" android:background="#0f0f0f"
+        android:divider="#1a1a1a" android:dividerHeight="1dp"/>
+
+    <TextView android:layout_width="match_parent" android:layout_height="wrap_content"
+        android:paddingTop="6dp" android:text="Long-press to enable / disable / remove"
+        android:textColor="@color/sub" android:textSize="10sp"/>
+</LinearLayout>

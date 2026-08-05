@@ -1,0 +1,2 @@
+-keep class com.zero.honorroot.** { *; }
+-keepclasseswithmembernames class * { native <methods>; }

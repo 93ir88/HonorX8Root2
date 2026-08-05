@@ -1,0 +1,58 @@
+name: Build HonorX8Root APK
+
+on:
+  push:
+    branches: [ main, master ]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup JDK 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+          cache: gradle
+
+      - name: Setup Android SDK + NDK
+        uses: android-actions/setup-android@v3
+        with:
+          accept-android-sdk-licenses: true
+          packages: >
+            platform-tools
+            platforms;android-34
+            build-tools;34.0.0
+            ndk;27.0.12077973
+            cmake;3.22.1
+
+      - name: Compile su binary (arm64 static)
+        run: |
+          NDK=$ANDROID_SDK_ROOT/ndk/27.0.12077973
+          CC=$NDK/toolchains/llvm/prebuilt/linux-x86_64/bin/aarch64-linux-android29-clang
+          $CC -o app/src/main/assets/su su_src/su.c \
+            -static -O2 -fPIE -pie -Wl,--strip-all
+          echo "su: $(wc -c < app/src/main/assets/su) bytes"
+
+      - name: Build APK
+        run: |
+          chmod +x gradlew
+          ./gradlew assembleDebug --no-daemon --stacktrace
+
+      - name: Upload APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: HonorX8Root-debug
+          path: app/build/outputs/apk/debug/app-debug.apk
+          retention-days: 30
+
+      - name: APK info
+        run: |
+          APK=app/build/outputs/apk/debug/app-debug.apk
+          echo "Size:   $(du -sh $APK | cut -f1)"
+          echo "SHA256: $(sha256sum $APK | cut -d' ' -f1)"
