@@ -9,19 +9,22 @@
         android:theme="@style/AppTheme"
         android:allowBackup="false"
         android:extractNativeLibs="true">
+
         <activity android:name=".MainActivity" android:exported="true"
             android:screenOrientation="portrait">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN"/>
                 <category android:name="android.intent.category.LAUNCHER"/>
-                <provider
-    android:name="rikka.shizuku.ShizukuProvider"
-    android:authorities="${applicationId}.shizuku"
-    android:exported="true"
-    android:multiprocess="false"
-    android:enabled="true"
-    android:permission="android.permission.INTERACT_ACROSS_USERS_FULL"/>
             </intent-filter>
         </activity>
+
+        <provider
+            android:name="rikka.shizuku.ShizukuProvider"
+            android:authorities="${applicationId}.shizuku"
+            android:exported="true"
+            android:multiprocess="false"
+            android:enabled="true"
+            android:permission="android.permission.INTERACT_ACROSS_USERS_FULL"/>
+
     </application>
 </manifest>
