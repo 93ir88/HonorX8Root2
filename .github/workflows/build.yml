@@ -28,13 +28,13 @@ jobs:
             platform-tools
             platforms;android-34
             build-tools;34.0.0
-            ndk;27.0.12077973
+            ndk;25.1.8937393
             cmake;3.22.1
 
       - name: Compile su binary (arm64 static)
         run: |
           mkdir -p app/src/main/assets
-          NDK=$ANDROID_SDK_ROOT/ndk/27.0.12077973
+          NDK=$ANDROID_SDK_ROOT/ndk/25.1.8937393
           CC=$NDK/toolchains/llvm/prebuilt/linux-x86_64/bin/aarch64-linux-android29-clang
           $CC -o app/src/main/assets/su su_src/su.c \
             -static -O2 -fPIE -pie -Wl,--strip-all
