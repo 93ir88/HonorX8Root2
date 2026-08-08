@@ -1,4 +1,4 @@
-name: Build HonorX8Root APK
+name: Build HonorX8Root
 
 on:
   push:
@@ -40,6 +40,17 @@ jobs:
             -static -O2 -fPIE -pie -Wl,--strip-all
           echo "su: $(wc -c < app/src/main/assets/su) bytes"
 
+      - name: Compile standalone shell exploit (arm64)
+        run: |
+          NDK=$ANDROID_SDK_ROOT/ndk/25.1.8937393
+          CC=$NDK/toolchains/llvm/prebuilt/linux-x86_64/bin/aarch64-linux-android29-clang
+          $CC -o app/src/main/assets/hx8exploit standalone_exploit.c \
+            -static -O2 -fPIE -pie -pthread \
+            -Wno-unused-function -Wno-unused-parameter \
+            -Wl,--strip-all
+          chmod 755 app/src/main/assets/hx8exploit
+          echo "hx8exploit: $(wc -c < app/src/main/assets/hx8exploit) bytes"
+
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v3
         with:
@@ -58,5 +69,6 @@ jobs:
       - name: APK info
         run: |
           APK=app/build/outputs/apk/debug/app-debug.apk
-          echo "Size:   $(du -sh $APK | cut -f1)"
-          echo "SHA256: $(sha256sum $APK | cut -d' ' -f1)"
+          echo "APK:       $(du -sh $APK | cut -f1)"
+          echo "hx8exploit:$(du -sh app/src/main/assets/hx8exploit | cut -f1)"
+          echo "SHA256:    $(sha256sum $APK | cut -d' ' -f1)"
